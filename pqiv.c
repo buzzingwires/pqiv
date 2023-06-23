@@ -5296,12 +5296,8 @@ gboolean window_draw_callback(GtkWidget *widget, cairo_t *cr_arg, gpointer user_
 	// Draw info box (directly to the screen)
 #ifndef CONFIGURED_WITHOUT_INFO_TEXT
 	if(current_info_text != NULL) {
-		double x1 = 0., x2 = 0., y1 = 0., y2 = 0.;
-
-		PangoLayout *pango_layout = pango_cairo_create_layout(cr_arg);
-
 		PangoFontDescription *pango_font_desc = pango_font_description_from_string(option_font);
-		pango_layout_set_font_description (pango_layout, pango_font_desc);
+		double x1 = 0., x2 = 0., y1 = 0., y2 = 0.;
 
 		cairo_save(cr_arg);
 		// Attempt this multiple times: If it does not fit the window,
@@ -5316,9 +5312,9 @@ gboolean window_draw_callback(GtkWidget *widget, cairo_t *cr_arg, gpointer user_
 		else {
 			font_size = current_info_text_cached_font_size;
 		}
-		for(; font_size > 6; font_size--) {
+		for(; font_size > 1; font_size--) {
 			PangoRectangle pango_extents;
-			pango_font_description_set_size(pango_font_desc, font_size);
+			PangoLayout *pango_layout;
 
 			if(main_window_in_fullscreen == FALSE) {
 				// Tiling WMs, at least i3, react weird on our window size changing.
@@ -5326,23 +5322,27 @@ gboolean window_draw_callback(GtkWidget *widget, cairo_t *cr_arg, gpointer user_
 				cairo_translate(cr_arg, x < 0 ? 0 : x, y < 0 ? 0 : y);
 			}
 
-			if(x2 > main_window_width - 10 * screen_scale_factor && !main_window_in_fullscreen) {
-				cairo_restore(cr_arg);
-				cairo_save(cr_arg);
-				continue;
-			}
-
 			cairo_translate(cr_arg, 10 * screen_scale_factor, 20 * screen_scale_factor);
 
+			pango_layout = pango_cairo_create_layout(cr_arg);
+			pango_font_description_set_size(pango_font_desc, font_size * PANGO_SCALE);
+			pango_layout_set_font_description(pango_layout, pango_font_desc);
+
 			pango_layout_set_text(pango_layout, current_info_text, -1);
-			pango_cairo_update_layout(cr_arg, pango_layout);
 			pango_layout_get_extents(pango_layout, NULL, &pango_extents);
 			x1 = pango_extents.x / PANGO_SCALE;
 			y1 = pango_extents.y / PANGO_SCALE;
 			x2 = (pango_extents.x + pango_extents.width) / PANGO_SCALE;
 			y2 = (pango_extents.y + pango_extents.height) / PANGO_SCALE;
 
+			if(x2 > main_window_width - 10 * screen_scale_factor && !main_window_in_fullscreen) {
+				cairo_restore(cr_arg);
+				cairo_save(cr_arg);
+				g_object_unref(pango_layout);
+				continue;
+			}
 			current_info_text_cached_font_size = font_size;
+
 			cairo_set_source_rgb(cr_arg, option_box_colors.bg_red, option_box_colors.bg_green, option_box_colors.bg_blue);
 			cairo_rectangle(cr_arg, x1 - 5, y1 - 2, (x2 - x1) + 10, (y2 - y1) + 4);
 			cairo_fill(cr_arg);
@@ -5351,12 +5351,11 @@ gboolean window_draw_callback(GtkWidget *widget, cairo_t *cr_arg, gpointer user_
 			pango_cairo_show_layout (cr_arg, pango_layout);
 			cairo_fill(cr_arg);
 
+			g_object_unref(pango_layout);
 			break;
 		}
 
 		pango_font_description_free(pango_font_desc);
-		g_object_unref(pango_layout);
-
 		cairo_restore(cr_arg);
 
 		// Store where the box was drawn to allow for partial updates of the screen
