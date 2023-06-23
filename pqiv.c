@@ -5348,7 +5348,7 @@ gboolean window_draw_callback(GtkWidget *widget, cairo_t *cr_arg, gpointer user_
 			cairo_fill(cr_arg);
 
 			cairo_set_source_rgb(cr_arg, option_box_colors.fg_red, option_box_colors.fg_green, option_box_colors.fg_blue);
-			pango_cairo_show_layout (cr_arg, pango_layout);
+			pango_cairo_show_layout(cr_arg, pango_layout);
 			cairo_fill(cr_arg);
 
 			g_object_unref(pango_layout);
