@@ -5363,8 +5363,8 @@ gboolean window_draw_callback(GtkWidget *widget, cairo_t *cr_arg, gpointer user_
 		current_info_text_bounding_box.y = (main_window_in_fullscreen == TRUE ? 0 : (y < 0 ? 0 : y)) + 20 -(y2 - y1) - 2;
 
 		 // Redraw some extra pixels to make sure a wider new box would be covered:
-		current_info_text_bounding_box.width = (x2 - x1) + 10;
-		current_info_text_bounding_box.height = (y2 - y1) + 4;
+		current_info_text_bounding_box.width = (x2 - x1) + 10 + 30;
+		current_info_text_bounding_box.height = (y2 - y1) + 4 + 4;
 	}
 #endif
 
